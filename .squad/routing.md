@@ -6,18 +6,26 @@ How to decide who handles what.
 
 | Work Type | Route To | Examples |
 |-----------|----------|----------|
-| {domain 1} | {Name} | {example tasks} |
-| {domain 2} | {Name} | {example tasks} |
-| {domain 3} | {Name} | {example tasks} |
-| Code review | {Name} | Review PRs, check quality, suggest improvements |
-| Testing | {Name} | Write tests, find edge cases, verify fixes |
-| Scope & priorities | {Name} | What to build next, trade-offs, decisions |
+| Architecture, hexagonal ports, design proposals | Dallas | Port/adapter design, API contracts, tech debt triage |
+| Astro components, search UI, admin portal | Lambert | Content collections, Fuse.js, WYSIWYG editor, image pipeline |
+| Azure Functions, Prisma, REST APIs | Parker | Item CRUD, shadow cache, GitHub API write-back, auth adapter |
+| Frontend tests, Playwright, Astro component tests | Vasquez | E2E flows, URL state persistence, accessibility |
+| Backend tests, API integration, DB fixtures | Hicks | Azure Function tests, shadow cache state machine, auth flows |
+| Deployment, CI/CD, infra, secrets | Bishop | Azure SWA config, GitHub Actions, Postgres provisioning |
+| Code review | Dallas | Review PRs, check quality, enforce hexagonal contracts |
+| Scope & priorities | Dallas | What to build next, trade-offs, decisions |
 | Session logging | Scribe | Automatic — never needs routing |
 
 ## Issue Routing
 
 | Label | Action | Who |
 |-------|--------|-----|
+| `squad:dallas` | Architecture / scope / review | Dallas |
+| `squad:lambert` | Frontend / UI / Astro | Lambert |
+| `squad:parker` | Backend / API / database | Parker |
+| `squad:vasquez` | Frontend testing / Playwright | Vasquez |
+| `squad:hicks` | Backend testing / integration | Hicks |
+| `squad:bishop` | DevOps / infra / deployment | Bishop |
 | `squad` | Triage: analyze issue, assign `squad:{member}` label | Lead |
 | `squad:{name}` | Pick up issue and complete the work | Named member |
 
