@@ -88,7 +88,7 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           prompt: ${{ env.PROMPT_CONTENT }}
-          claude_args: "--max-turns 30 --max-budget-usd 5"
+          claude_args: "--max-budget-usd 5"
           github_token: ${{ secrets.GITHUB_TOKEN }}
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           show_full_output: true
