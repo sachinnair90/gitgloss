@@ -32,17 +32,7 @@ For each target task, in order:
 4. Commit the implementation and the updated `tasks.md` together in a single commit; use a commit message of the form: `feat(<change-name>): implement task <N> — <short description>`
 5. Move to the next task
 
-## Step 4: Invoke the loop plugin
-
-At the start of your work session, invoke:
-
-```
-/ralph-loop
-```
-
-This activates iterative execution. The loop will continue re-feeding your context until you emit the completion signal.
-
-## Step 5: Signal completion
+## Step 4: Signal completion
 
 When every task in `${TASK_RANGE}` is checked off in `tasks.md`, output the following on its own line:
 

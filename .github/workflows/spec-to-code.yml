@@ -73,47 +73,6 @@ jobs:
             echo "PROMPT_CONTENT=Implement the OpenSpec change '${CHANGE_NAME}' tasks '${TASK_RANGE}'. Read openspec/changes/${CHANGE_NAME}/tasks.md, proposal.md, design.md, and all specs/**/*.md. Implement each task in the specified range, check it off in tasks.md, then output TASKS_COMPLETE when done." >> "$GITHUB_ENV"
           fi
 
-      - name: Install Claude Code
-        run: |
-          npm install -g @anthropic-ai/claude-code@latest
-          claude --version
-
-      - name: Install and patch ralph-loop plugin
-        run: |
-          # Install the plugin from the official marketplace
-          claude plugin marketplace add https://github.com/anthropics/claude-plugins-official.git
-          claude plugin install ralph-loop
-
-          # Locate the installed command file (path includes a commit hash subdirectory)
-          PLUGIN_CMD=$(find ~/.claude -name "ralph-loop.md" -path "*/commands/*" 2>/dev/null | head -1)
-          if [ -z "$PLUGIN_CMD" ]; then
-            echo "ERROR: ralph-loop.md not found after installation"
-            exit 1
-          fi
-          echo "Patching: $PLUGIN_CMD"
-
-          # Overwrite with fixed version — replaces the broken ```! block with a plain Bash() call
-          # See: https://github.com/anthropics/claude-code/issues/16398
-          cat > "$PLUGIN_CMD" << 'PATCH_EOF'
----
-description: "Start Ralph Loop in current session"
-argument-hint: "PROMPT [--max-iterations N] [--completion-promise TEXT]"
-allowed-tools: ["Bash(${CLAUDE_PLUGIN_ROOT}/scripts/setup-ralph-loop.sh:*)"]
-hide-from-slash-command-tool: "true"
----
-
-# Ralph Loop Command
-
-Execute the setup script to initialize the Ralph loop:
-
-Bash("${CLAUDE_PLUGIN_ROOT}/scripts/setup-ralph-loop.sh" $ARGUMENTS)
-
-Please work on the task. When you try to exit, the Ralph loop will feed the SAME PROMPT back to you for the next iteration. You'll see your previous work in files and git history, allowing you to iterate and improve.
-
-CRITICAL RULE: If a completion promise is set, you may ONLY output it when the statement is completely and unequivocally TRUE. Do not output false promises to escape the loop, even if you think you're stuck or should exit for other reasons. The loop is designed to continue until genuine completion.
-PATCH_EOF
-          echo "Patched ralph-loop.md successfully"
-
       - name: Run spec-to-code agent
         uses: anthropics/claude-code-action@v1
         with:
