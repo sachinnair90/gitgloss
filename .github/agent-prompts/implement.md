@@ -4,23 +4,23 @@ You are an autonomous implementation agent. Your job is to read a fully-specifie
 
 ## Change Context
 
-**Change name**: `${{ inputs.change-name }}`
-**Task range**: `${{ inputs.task-range }}`
+**Change name**: `${CHANGE_NAME}`
+**Task range**: `${TASK_RANGE}`
 
 ## Step 1: Load the change artifacts
 
 Before writing any code, read every artifact for this change in the following order:
 
-1. `openspec/changes/${{ inputs.change-name }}/proposal.md` — understand the problem being solved and what is being built
-2. `openspec/changes/${{ inputs.change-name }}/design.md` — understand the architectural decisions, constraints, and rationale; treat every decision recorded here as binding
-3. `openspec/changes/${{ inputs.change-name }}/specs/**/*.md` — read all spec files; these define the authoritative contracts for every deliverable
-4. `openspec/changes/${{ inputs.change-name }}/tasks.md` — identify the full task list; you will implement only the tasks in the range `${{ inputs.task-range }}`
+1. `openspec/changes/${CHANGE_NAME}/proposal.md` — understand the problem being solved and what is being built
+2. `openspec/changes/${CHANGE_NAME}/design.md` — understand the architectural decisions, constraints, and rationale; treat every decision recorded here as binding
+3. `openspec/changes/${CHANGE_NAME}/specs/**/*.md` — read all spec files; these define the authoritative contracts for every deliverable
+4. `openspec/changes/${CHANGE_NAME}/tasks.md` — identify the full task list; you will implement only the tasks in the range `${TASK_RANGE}`
 
 Do not begin implementation until you have read all four artifact types.
 
 ## Step 2: Identify your target tasks
 
-From `tasks.md`, extract the tasks whose numbers fall within `${{ inputs.task-range }}`. These are your target tasks. Implement them in numeric order. Do not skip tasks. Do not implement tasks outside the range.
+From `tasks.md`, extract the tasks whose numbers fall within `${TASK_RANGE}`. These are your target tasks. Implement them in numeric order. Do not skip tasks. Do not implement tasks outside the range.
 
 ## Step 3: Implement each task
 
@@ -28,7 +28,7 @@ For each target task, in order:
 
 1. Re-read the relevant spec section(s) before writing code — implement exactly what the spec says, nothing more, nothing less
 2. Write the implementation in the correct location within the target package directory (see Constraints below)
-3. After completing the task, check it off in `openspec/changes/${{ inputs.change-name }}/tasks.md` by changing `- [ ]` to `- [x]`
+3. After completing the task, check it off in `openspec/changes/${CHANGE_NAME}/tasks.md` by changing `- [ ]` to `- [x]`
 4. Commit the implementation and the updated `tasks.md` together in a single commit; use a commit message of the form: `feat(<change-name>): implement task <N> — <short description>`
 5. Move to the next task
 
@@ -44,7 +44,7 @@ This activates iterative execution. The loop will continue re-feeding your conte
 
 ## Step 5: Signal completion
 
-When every task in `${{ inputs.task-range }}` is checked off in `tasks.md`, output the following on its own line:
+When every task in `${TASK_RANGE}` is checked off in `tasks.md`, output the following on its own line:
 
 ```
 TASKS_COMPLETE
@@ -61,13 +61,13 @@ You must follow these rules without exception:
 ### Files you may modify
 
 - Files within the target package directory for this change (determined by reading `proposal.md` and the specs)
-- `openspec/changes/${{ inputs.change-name }}/tasks.md` — only to check off completed tasks
+- `openspec/changes/${CHANGE_NAME}/tasks.md` — only to check off completed tasks
 
 ### Files you must NOT modify
 
 - Any file under `.github/workflows/` — do not touch workflow YAML files
 - `package.json`, `package-lock.json`, `yarn.lock`, or any other dependency manifest's `scripts` section — you may add dependencies if a spec explicitly requires them, but must not alter existing scripts
-- Any OpenSpec artifact: `openspec/changes/${{ inputs.change-name }}/proposal.md`, `design.md`, `specs/**/*.md` — these are read-only authority documents; never edit them
+- Any OpenSpec artifact: `openspec/changes/${CHANGE_NAME}/proposal.md`, `design.md`, `specs/**/*.md` — these are read-only authority documents; never edit them
 - Any file outside the target package directory unless a spec explicitly names it as a deliverable
 
 ### Behavior rules

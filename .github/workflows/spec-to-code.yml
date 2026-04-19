@@ -57,17 +57,20 @@ jobs:
 
       - name: Read implementation prompt
         id: read_prompt
+        env:
+          CHANGE_NAME: ${{ inputs.change-name }}
+          TASK_RANGE: ${{ inputs.task-range }}
         run: |
           PROMPT_FILE="${{ github.workspace }}/.github/agent-prompts/implement.md"
           if [ -f "$PROMPT_FILE" ]; then
-            # Export as a multiline env var; use GitHub Actions file-based env to handle special chars
+            # Substitute CHANGE_NAME and TASK_RANGE into the prompt file before passing to the agent
             {
               echo 'PROMPT_CONTENT<<PROMPT_EOF'
-              cat "$PROMPT_FILE"
+              envsubst '${CHANGE_NAME} ${TASK_RANGE}' < "$PROMPT_FILE"
               echo 'PROMPT_EOF'
             } >> "$GITHUB_ENV"
           else
-            echo "PROMPT_CONTENT=Implement the OpenSpec change '\$CHANGE_NAME' tasks '\$TASK_RANGE'. Read openspec/changes/\$CHANGE_NAME/tasks.md, proposal.md, design.md, and all specs/**/*.md. Implement each task in the specified range, check it off in tasks.md, then output TASKS_COMPLETE when done." >> "$GITHUB_ENV"
+            echo "PROMPT_CONTENT=Implement the OpenSpec change '${CHANGE_NAME}' tasks '${TASK_RANGE}'. Read openspec/changes/${CHANGE_NAME}/tasks.md, proposal.md, design.md, and all specs/**/*.md. Implement each task in the specified range, check it off in tasks.md, then output TASKS_COMPLETE when done." >> "$GITHUB_ENV"
           fi
 
       - name: Run spec-to-code agent
