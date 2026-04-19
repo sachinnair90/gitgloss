@@ -8,10 +8,10 @@
 
 ## 2. Domain Schema
 
-- [ ] 2.1 Create `src/core/domain/schema.ts`: define `Author` Zod object (`name`, `email`)
-- [ ] 2.2 Add `CatalogItem` Zod schema to `schema.ts` with all 12 fields as specified; export inferred TypeScript type `CatalogItem`
-- [ ] 2.3 Add `Query` Zod schema to `schema.ts` (all fields optional: `search`, `tags`, `status`, `featured`, `sort`, `sortDir`); export type
-- [ ] 2.4 Add `QueryResult` type to `schema.ts` (`items: CatalogItem[]`, `total: number`); export type
+- [x] 2.1 Create `src/core/domain/schema.ts`: define `Author` Zod object (`name`, `email`)
+- [x] 2.2 Add `CatalogItem` Zod schema to `schema.ts` with all 12 fields as specified; export inferred TypeScript type `CatalogItem`
+- [x] 2.3 Add `Query` Zod schema to `schema.ts` (all fields optional: `search`, `tags`, `status`, `featured`, `sort`, `sortDir`); export type
+- [x] 2.4 Add `QueryResult` type to `schema.ts` (`items: CatalogItem[]`, `total: number`); export type
 
 ## 3. Port Interfaces
 
