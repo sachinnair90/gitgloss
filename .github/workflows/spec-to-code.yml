@@ -119,13 +119,16 @@ jobs:
             --jq '.[0].number' 2>/dev/null || true)
 
           if [ -z "$PR_NUMBER" ]; then
-            PR_NUMBER=$(gh pr create \
+            gh pr create \
               --head "$BRANCH" \
               --base main \
               --title "feat(${CHANGE_NAME}): implement tasks ${TASK_RANGE}" \
-              --body "Automated implementation of tasks \`${TASK_RANGE}\` for change \`${CHANGE_NAME}\`." \
+              --body "Automated implementation of tasks \`${TASK_RANGE}\` for change \`${CHANGE_NAME}\`."
+            PR_NUMBER=$(gh pr list \
+              --head "$BRANCH" \
+              --state open \
               --json number \
-              --jq '.number' 2>/dev/null || true)
+              --jq '.[0].number')
             echo "Created PR #${PR_NUMBER}"
           else
             echo "PR #${PR_NUMBER} already exists"
