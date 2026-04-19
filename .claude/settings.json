@@ -1,0 +1,16 @@
+{
+  "enabledPlugins": {
+    "ralph-loop@claude-plugins-official": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash(/home/sachin-nair/.claude/plugins/cache/claude-plugins-official/ralph-loop/*)",
+      "Bash(openspec instructions *)",
+      "Bash(openspec status *)",
+      "WebSearch",
+      "Bash(npm install *)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
+    ]
+  }
+}

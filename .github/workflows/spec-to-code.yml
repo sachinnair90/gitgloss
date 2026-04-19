@@ -1,0 +1,114 @@
+name: Spec to Code
+
+on:
+  workflow_dispatch:
+    inputs:
+      change-name:
+        description: "OpenSpec change name to implement"
+        required: true
+        type: string
+      task-range:
+        description: "Task range to implement (e.g. 1-5)"
+        required: false
+        default: "1-5"
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  implement:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Apply agent:implementing label
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Ensure the label exists before applying it
+            const labels = ['agent:implementing'];
+            for (const label of labels) {
+              try {
+                await github.rest.issues.getLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label
+                });
+              } catch (e) {
+                if (e.status === 404) {
+                  await github.rest.issues.createLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    name: label,
+                    color: 'ededed'
+                  });
+                }
+              }
+            }
+
+            // The spec-to-code run doesn't operate on an existing issue, so we
+            // record the state in the workflow run summary instead. If a tracking
+            // issue number is ever passed as an input this block can be extended.
+            core.info(`Starting spec-to-code run for change: ${{ inputs.change-name }}, task-range: ${{ inputs.task-range }}`);
+
+      - name: Read implementation prompt
+        id: read_prompt
+        run: |
+          PROMPT_FILE="${{ github.workspace }}/.github/agent-prompts/implement.md"
+          if [ -f "$PROMPT_FILE" ]; then
+            # Export as a multiline env var; use GitHub Actions file-based env to handle special chars
+            {
+              echo 'PROMPT_CONTENT<<PROMPT_EOF'
+              cat "$PROMPT_FILE"
+              echo 'PROMPT_EOF'
+            } >> "$GITHUB_ENV"
+          else
+            echo "PROMPT_CONTENT=Implement the OpenSpec change '\$CHANGE_NAME' tasks '\$TASK_RANGE'. Read openspec/changes/\$CHANGE_NAME/tasks.md, proposal.md, design.md, and all specs/**/*.md. Implement each task in the specified range, check it off in tasks.md, then output TASKS_COMPLETE when done." >> "$GITHUB_ENV"
+          fi
+
+      - name: Run spec-to-code agent
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: ${{ env.PROMPT_CONTENT }}
+          plugins: ralph-loop
+          claude_args: "--max-turns 30 --max-budget-usd 5"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+        env:
+          CHANGE_NAME: ${{ inputs.change-name }}
+          TASK_RANGE: ${{ inputs.task-range }}
+
+      - name: Apply agent:active label to opened PR
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # The claude-code-action will have created a branch and PR.
+          # Find any PR from branches matching agent/<change-name>/* and apply the label.
+          CHANGE_NAME="${{ inputs.change-name }}"
+          PR_NUMBER=$(gh pr list \
+            --head "agent/${CHANGE_NAME}" \
+            --state open \
+            --json number \
+            --jq '.[0].number' 2>/dev/null || true)
+
+          if [ -z "$PR_NUMBER" ]; then
+            # Broader search: any open PR whose branch starts with agent/
+            PR_NUMBER=$(gh pr list \
+              --state open \
+              --json number,headRefName \
+              --jq ".[] | select(.headRefName | startswith(\"agent/${CHANGE_NAME}\")) | .number" \
+              2>/dev/null | head -1 || true)
+          fi
+
+          if [ -n "$PR_NUMBER" ]; then
+            echo "Applying agent:active label to PR #${PR_NUMBER}"
+            gh pr edit "$PR_NUMBER" --add-label "agent:active" || \
+              echo "Warning: could not apply agent:active label (label may not exist yet)"
+          else
+            echo "No PR found for change '${CHANGE_NAME}' — skipping label step"
+          fi
