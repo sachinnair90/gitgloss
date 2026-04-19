@@ -74,7 +74,7 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           prompt: ${{ env.PROMPT_CONTENT }}
-          plugin_marketplaces: https://github.com/anthropics/claude-plugins-official
+          plugin_marketplaces: https://github.com/anthropics/claude-plugins-official.git
           plugins: ralph-loop
           claude_args: "--max-turns 30 --max-budget-usd 5"
           github_token: ${{ secrets.GITHUB_TOKEN }}
