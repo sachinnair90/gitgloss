@@ -20,7 +20,9 @@ Do not begin implementation until you have read all four artifact types.
 
 ## Step 2: Identify your target tasks
 
-From `tasks.md`, extract the tasks whose numbers fall within `${TASK_RANGE}`. These are your target tasks. Implement them in numeric order. Do not skip tasks. Do not implement tasks outside the range.
+From `tasks.md`, extract the tasks whose numbers fall within `${TASK_RANGE}`. These are your target tasks. Implement them in numeric order. Do not implement tasks outside the range.
+
+**Resuming a partial run**: If any target tasks are already marked `- [x]` or `- [~]`, they were completed or blocked in a previous run — skip them and continue from the first unchecked task. Do not re-implement or re-commit already-checked tasks.
 
 ## Step 3: Implement each task
 

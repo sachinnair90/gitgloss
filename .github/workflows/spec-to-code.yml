@@ -73,7 +73,7 @@ jobs:
             echo "PROMPT_CONTENT=Implement the OpenSpec change '${CHANGE_NAME}' tasks '${TASK_RANGE}'. Read openspec/changes/${CHANGE_NAME}/tasks.md, proposal.md, design.md, and all specs/**/*.md. Implement each task in the specified range, check it off in tasks.md, then output TASKS_COMPLETE when done." >> "$GITHUB_ENV"
           fi
 
-      - name: Create agent branch
+      - name: Create or resume agent branch
         env:
           CHANGE_NAME: ${{ inputs.change-name }}
           TASK_RANGE: ${{ inputs.task-range }}
@@ -81,8 +81,14 @@ jobs:
           BRANCH="agent/${CHANGE_NAME}/tasks-${TASK_RANGE}"
           git config user.email "actions@github.com"
           git config user.name "GitHub Actions"
-          git checkout -b "$BRANCH"
-          git push -u origin "$BRANCH"
+          if git ls-remote --exit-code origin "refs/heads/$BRANCH" > /dev/null 2>&1; then
+            git fetch origin "$BRANCH"
+            git checkout "$BRANCH"
+            git reset --hard "origin/$BRANCH"
+          else
+            git checkout -b "$BRANCH"
+            git push -u origin "$BRANCH"
+          fi
 
       - name: Run spec-to-code agent
         uses: anthropics/claude-code-action@v1
