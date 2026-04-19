@@ -73,6 +73,17 @@ jobs:
             echo "PROMPT_CONTENT=Implement the OpenSpec change '${CHANGE_NAME}' tasks '${TASK_RANGE}'. Read openspec/changes/${CHANGE_NAME}/tasks.md, proposal.md, design.md, and all specs/**/*.md. Implement each task in the specified range, check it off in tasks.md, then output TASKS_COMPLETE when done." >> "$GITHUB_ENV"
           fi
 
+      - name: Create agent branch
+        env:
+          CHANGE_NAME: ${{ inputs.change-name }}
+          TASK_RANGE: ${{ inputs.task-range }}
+        run: |
+          BRANCH="agent/${CHANGE_NAME}/tasks-${TASK_RANGE}"
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git checkout -b "$BRANCH"
+          git push -u origin "$BRANCH"
+
       - name: Run spec-to-code agent
         uses: anthropics/claude-code-action@v1
         with:
@@ -85,33 +96,36 @@ jobs:
           CHANGE_NAME: ${{ inputs.change-name }}
           TASK_RANGE: ${{ inputs.task-range }}
 
-      - name: Apply agent:active label to opened PR
+      - name: Create PR and apply label
         if: success()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHANGE_NAME: ${{ inputs.change-name }}
+          TASK_RANGE: ${{ inputs.task-range }}
         run: |
-          # The claude-code-action will have created a branch and PR.
-          # Find any PR from branches matching agent/<change-name>/* and apply the label.
-          CHANGE_NAME="${{ inputs.change-name }}"
+          BRANCH="agent/${CHANGE_NAME}/tasks-${TASK_RANGE}"
+
+          # Create PR if one doesn't already exist for this branch
           PR_NUMBER=$(gh pr list \
-            --head "agent/${CHANGE_NAME}" \
+            --head "$BRANCH" \
             --state open \
             --json number \
             --jq '.[0].number' 2>/dev/null || true)
 
           if [ -z "$PR_NUMBER" ]; then
-            # Broader search: any open PR whose branch starts with agent/
-            PR_NUMBER=$(gh pr list \
-              --state open \
-              --json number,headRefName \
-              --jq ".[] | select(.headRefName | startswith(\"agent/${CHANGE_NAME}\")) | .number" \
-              2>/dev/null | head -1 || true)
+            PR_NUMBER=$(gh pr create \
+              --head "$BRANCH" \
+              --base main \
+              --title "feat(${CHANGE_NAME}): implement tasks ${TASK_RANGE}" \
+              --body "Automated implementation of tasks \`${TASK_RANGE}\` for change \`${CHANGE_NAME}\`." \
+              --json number \
+              --jq '.number' 2>/dev/null || true)
+            echo "Created PR #${PR_NUMBER}"
+          else
+            echo "PR #${PR_NUMBER} already exists"
           fi
 
           if [ -n "$PR_NUMBER" ]; then
-            echo "Applying agent:active label to PR #${PR_NUMBER}"
             gh pr edit "$PR_NUMBER" --add-label "agent:active" || \
               echo "Warning: could not apply agent:active label (label may not exist yet)"
-          else
-            echo "No PR found for change '${CHANGE_NAME}' — skipping label step"
           fi

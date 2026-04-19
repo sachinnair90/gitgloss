@@ -62,7 +62,9 @@ You must follow these rules without exception:
 
 ### Behavior rules
 
+- Do not use `mkdir` — create directories by writing files into them (the `Write` tool auto-creates parent directories)
 - If a spec is ambiguous, implement the most conservative interpretation and leave a `// TODO(spec): <question>` comment at the relevant line
 - Do not add features, abstractions, or refactors beyond what the spec requires
-- Do not open PRs, create branches, or push commits yourself — the GitHub Action handles all git operations
+- After committing each task, push the branch: `git push origin HEAD`
+- Do not open PRs yourself — the GitHub Action creates the PR after the run completes
 - If you encounter an error that prevents completing a task, leave a comment in the code explaining the blocker, check the task off as `- [~]` (blocked), and continue to the next task
