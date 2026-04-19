@@ -4,12 +4,29 @@
   },
   "permissions": {
     "allow": [
-      "Bash(openspec instructions *)",
-      "Bash(openspec status *)",
+      "Skill",
+      "Write",
+      "Edit",
+      "Bash(openspec *)",
       "WebSearch",
-      "Bash(npm install *)",
+      "Bash(npm *)",
+      "Bash(bun *)",
+      "Bash(node *)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(git status *)",
+      "Bash(git log *)",
+      "Bash(git diff *)",
+      "Bash(git checkout *)",
+      "Bash(git branch *)",
+      "Bash(mkdir *)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(echo *)",
+      "Bash(find *)",
+      "Bash(cp *)",
+      "Bash(mv *)"
     ]
   }
 }
