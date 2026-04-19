@@ -81,6 +81,6 @@ GitGloss uses the `spec-driven` OpenSpec schema: each change has `proposal.md`, 
 
 ## Open Questions
 
-- What is the exact `plugins:` value for ralph-loop in `claude-code-action`? The marketplace URL and plugin identifier need to be verified from ralph-loop install docs before writing the workflow.
+- ~~What is the exact `plugins:` value for ralph-loop in `claude-code-action`?~~ **Resolved**: Plugin identifier is `ralph-loop`. Marketplace URL: https://claude.com/plugins/ralph-loop. Use `plugins: ralph-loop` in `claude-code-action` inputs. Invoke in prompt as `/ralph-loop`. Added to marketplace 2026-01-07 at version 1.0.0.
 - Should `--max-budget-usd` be a workflow input or hardcoded? For Phase 1, hardcoding `$5` per run is acceptable; make it an input in v2.
 - Is `workflow_dispatch` sufficient as the initial trigger for Phase 1, or should the issue-label trigger (`issues: labeled`) be implemented from the start? Recommendation: start with `workflow_dispatch` for easier testing, add label trigger in the same PR.

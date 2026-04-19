@@ -1,0 +1,149 @@
+name: PR Review Response
+
+on:
+  pull_request_review:
+    types: [submitted]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  # ─── Automation mode: fires on PR review submissions for agent-managed PRs ───
+  auto-respond:
+    name: Auto-respond to PR review
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'pull_request_review' &&
+      contains(github.event.pull_request.labels.*.name, 'agent:active')
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check iteration count
+        id: check_cycles
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const prNumber = pr.number;
+
+            // Count comments on this PR that were posted by github-actions[bot]
+            // as a proxy for agent response cycles.
+            const comments = await github.paginate(
+              github.rest.issues.listComments,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                per_page: 100
+              }
+            );
+
+            const botComments = comments.filter(c =>
+              c.user.login === 'github-actions[bot]' ||
+              c.user.type === 'Bot'
+            );
+
+            const cycleCount = botComments.length;
+            const MAX_CYCLES = 10;
+
+            core.info(`PR #${prNumber}: ${cycleCount} bot comment(s) found (limit: ${MAX_CYCLES})`);
+
+            if (cycleCount >= MAX_CYCLES) {
+              // Apply the review-limit-reached label
+              try {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: prNumber,
+                  labels: ['agent:review-limit-reached']
+                });
+              } catch (e) {
+                // Label may not exist; create it first
+                if (e.status === 422) {
+                  try {
+                    await github.rest.issues.createLabel({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      name: 'agent:review-limit-reached',
+                      color: 'b60205',
+                      description: 'Auto-response limit reached; manual resolution needed'
+                    });
+                    await github.rest.issues.addLabels({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      issue_number: prNumber,
+                      labels: ['agent:review-limit-reached']
+                    });
+                  } catch (e2) {
+                    core.warning(`Could not create/apply label: ${e2.message}`);
+                  }
+                }
+              }
+
+              // Post a comment notifying reviewers
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: [
+                  '## Auto-response limit reached',
+                  '',
+                  `The PR review agent has responded ${cycleCount} times on this PR, which exceeds the automatic limit of ${MAX_CYCLES} cycles.`,
+                  '',
+                  'To prevent infinite review loops, auto-responses are now paused. Please resolve the remaining review comments manually.',
+                  '',
+                  'If you want the agent to resume, you can:',
+                  '- Remove the `agent:review-limit-reached` label and re-submit your review, or',
+                  '- Mention `@claude` in a comment to start an interactive session.',
+                ].join('\n')
+              });
+
+              core.setOutput('should_run', 'false');
+            } else {
+              core.setOutput('should_run', 'true');
+            }
+
+      - name: Read review-response prompt
+        id: read_prompt
+        if: steps.check_cycles.outputs.should_run == 'true'
+        run: |
+          PROMPT_FILE="${{ github.workspace }}/.github/agent-prompts/review-response.md"
+          if [ -f "$PROMPT_FILE" ]; then
+            {
+              echo 'PROMPT_CONTENT<<PROMPT_EOF'
+              cat "$PROMPT_FILE"
+              echo 'PROMPT_EOF'
+            } >> "$GITHUB_ENV"
+          else
+            echo "PROMPT_CONTENT=You are responding to a PR review. Read all unresolved review comments on this PR. For each comment, decide: (1) Fix — if it addresses code quality, style, naming, or minor details within spec bounds, make the change and push; (2) Clarify — if it would require violating a spec requirement or design decision, post a comment quoting the spec and ask for confirmation, then apply the label agent:needs-clarity. When uncertain, default to Clarify. Process all comments in a single pass." >> "$GITHUB_ENV"
+          fi
+
+      - name: Run review-response agent
+        if: steps.check_cycles.outputs.should_run == 'true'
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: ${{ env.PROMPT_CONTENT }}
+          claude_args: "--max-turns 20 --max-budget-usd 3"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+
+  # ─── Interactive mode: fires when @claude is mentioned in a PR comment ────────
+  interactive:
+    name: Interactive @claude response
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issue_comment'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Respond to @claude mention
+        uses: anthropics/claude-code-action@v1
+        with:
+          trigger_phrase: "@claude"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}

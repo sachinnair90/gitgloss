@@ -1,0 +1,10 @@
+{
+  "enabledPlugins": {
+    "ralph-loop@claude-plugins-official": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash(/home/sachin-nair/.claude/plugins/cache/claude-plugins-official/ralph-loop/*)"
+    ]
+  }
+}
