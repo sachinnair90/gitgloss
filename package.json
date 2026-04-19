@@ -1,0 +1,27 @@
+{
+  "name": "@gitgloss/kernel",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "search": "tsx src/cli/index.ts",
+    "test": "vitest",
+    "build": "tsc"
+  },
+  "imports": {
+    "#core/*": "./src/core/*.ts",
+    "#adapters/*": "./src/adapters/*.ts",
+    "#cli/*": "./src/cli/*.ts"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "fuse.js": "^7.0.0",
+    "gray-matter": "^4.0.3",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  }
+}

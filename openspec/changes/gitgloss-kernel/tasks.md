@@ -1,10 +1,10 @@
 ## 1. Repo Scaffold & Tooling
 
-- [ ] 1.1 Initialise `package.json` with `type: "module"`, name `@gitgloss/kernel`, and scripts: `search`, `test`, `build`
-- [ ] 1.2 Add `tsconfig.json` with `strict: true`, `moduleResolution: bundler`, output to `dist/`, path aliases for `#core`, `#adapters`, `#cli`
-- [ ] 1.3 Install runtime dependencies: `zod`, `gray-matter`, `fuse.js`, `commander`
-- [ ] 1.4 Install dev dependencies: `typescript`, `vitest`, `tsx`, `@types/node`
-- [ ] 1.5 Create directory skeleton: `src/core/domain/`, `src/core/ports/`, `src/core/engine/`, `src/adapters/filesystem/`, `src/adapters/null/`, `src/cli/`, `content/catalog/`
+- [x] 1.1 Initialise `package.json` with `type: "module"`, name `@gitgloss/kernel`, and scripts: `search`, `test`, `build`
+- [x] 1.2 Add `tsconfig.json` with `strict: true`, `moduleResolution: bundler`, output to `dist/`, path aliases for `#core`, `#adapters`, `#cli`
+- [x] 1.3 Install runtime dependencies: `zod`, `gray-matter`, `fuse.js`, `commander`
+- [x] 1.4 Install dev dependencies: `typescript`, `vitest`, `tsx`, `@types/node`
+- [x] 1.5 Create directory skeleton: `src/core/domain/`, `src/core/ports/`, `src/core/engine/`, `src/adapters/filesystem/`, `src/adapters/null/`, `src/cli/`, `content/catalog/`
 
 ## 2. Domain Schema
 
